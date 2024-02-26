@@ -1,0 +1,55 @@
+composer require jeremykenedy/laravel2step
+composer require laravel/ui
+php artisan ui vue --auth
+npm install
+npm run dev
+php artisan vendor:publish --tag=laravel2step
+php artisan migrate
+
+LARAVEL_2STEP_ENABLED=true
+LARAVEL_2STEP_DATABASE_CONNECTION=mysql
+LARAVEL_2STEP_DATABASE_TABLE=laravel2step
+LARAVEL_2STEP_USER_MODEL=App\User
+LARAVEL_2STEP_EMAIL_FROM="anEmailIsrequired@email.com"
+LARAVEL_2STEP_EMAIL_FROM_NAME="Laravel 2 Step Verification"
+LARAVEL_2STEP_EMAIL_SUBJECT='Laravel 2 Step Verification'
+LARAVEL_2STEP_EXCEEDED_COUNT=3
+LARAVEL_2STEP_EXCEEDED_COUNTDOWN_MINUTES=1440
+LARAVEL_2STEP_VERIFIED_LIFETIME_MINUTES=360
+LARAVEL_2STEP_RESET_BUFFER_IN_SECONDS=300
+LARAVEL_2STEP_CSS_FILE="css/laravel2step/app.css"
+LARAVEL_2STEP_APP_CSS_ENABLED=false
+LARAVEL_2STEP_APP_CSS="css/app.css"
+LARAVEL_2STEP_BOOTSTRAP_CSS_CDN_ENABLED=true
+LARAVEL_2STEP_BOOTSTRAP_CSS_CDN="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+
+
+Route::group(['middleware' => ['twostep']], function () {
+    Route::get('/home', 'HomeController@index')->name('home');
+});
+
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=a98b9dcfd803ab
+MAIL_PASSWORD=a4a7c60df8209c
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Auth::routes();
+Route::group(
+    ['prefix' => 'verification', 'as' => 'laravel2step::', 'namespace' => 'jeremykenedy\laravel2step\App\Http\Controllers', 'middleware' => ['web']],
+    function () {
+        Route::get('/needed', ['uses' => 'TwoStepController@showVerification'])->name('verificationNeeded');
+        Route::post('/verify', ['uses' => 'TwoStepController@verify'])->name('verify');
+        Route::post('/resend', ['uses' => 'TwoStepController@resend'])->name('resend');
+    }
+);
+Route::middleware(['twostep'])->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+});
